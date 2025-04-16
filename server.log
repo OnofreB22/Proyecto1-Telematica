@@ -1,0 +1,320 @@
+[16-04-2025 09:58:51] Server started on port 8080
+[16-04-2025 10:00:13] New connection from 127.0.0.1:55566
+[16-04-2025 10:00:13] Request received:
+GET / HTTP/1.1
+Host: localhost:8080
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:136.0) Gecko/20100101 Firefox/136.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate, br, zstd
+Connection: keep-alive
+Cookie: csrftoken=umvi6ac1fL85gPjcneBPKChq5buztyhU
+Upgrade-Insecure-Requests: 1
+Sec-Fetch-Dest: document
+Sec-Fetch-Mode: navigate
+Sec-Fetch-Site: none
+Sec-Fetch-User: ?1
+Priority: u=0, i
+
+
+[16-04-2025 10:00:13] Response sent with status code 200
+[16-04-2025 10:00:14] New connection from 127.0.0.1:55574
+[16-04-2025 10:00:14] Request received:
+GET /images/example.jpg HTTP/1.1
+Host: localhost:8080
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:136.0) Gecko/20100101 Firefox/136.0
+Accept: image/avif,image/webp,image/png,image/svg+xml,image/*;q=0.8,*/*;q=0.5
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate, br, zstd
+Connection: keep-alive
+Referer: http://localhost:8080/
+Cookie: csrftoken=umvi6ac1fL85gPjcneBPKChq5buztyhU
+Sec-Fetch-Dest: image
+Sec-Fetch-Mode: no-cors
+Sec-Fetch-Site: same-origin
+Priority: u=4, i
+
+
+[16-04-2025 10:00:14] Response sent with status code 404
+[16-04-2025 10:00:14] New connection from 127.0.0.1:55590
+[16-04-2025 10:00:14] Request received:
+GET /favicon.ico HTTP/1.1
+Host: localhost:8080
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:136.0) Gecko/20100101 Firefox/136.0
+Accept: image/avif,image/webp,image/png,image/svg+xml,image/*;q=0.8,*/*;q=0.5
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate, br, zstd
+Connection: keep-alive
+Referer: http://localhost:8080/
+Cookie: csrftoken=umvi6ac1fL85gPjcneBPKChq5buztyhU
+Sec-Fetch-Dest: image
+Sec-Fetch-Mode: no-cors
+Sec-Fetch-Site: same-origin
+Priority: u=6
+
+
+[16-04-2025 10:00:14] Response sent with status code 404
+[16-04-2025 10:00:19] New connection from 127.0.0.1:58750
+[16-04-2025 10:00:25] Request received:
+
+[16-04-2025 10:00:25] Response sent with status code 400
+[16-04-2025 10:01:48] New connection from 127.0.0.1:47392
+[16-04-2025 10:01:49] Request received:
+GET /hola HTTP/1.1
+Host: localhost:8080
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:136.0) Gecko/20100101 Firefox/136.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate, br, zstd
+Connection: keep-alive
+Cookie: csrftoken=umvi6ac1fL85gPjcneBPKChq5buztyhU
+Upgrade-Insecure-Requests: 1
+Sec-Fetch-Dest: document
+Sec-Fetch-Mode: navigate
+Sec-Fetch-Site: none
+Sec-Fetch-User: ?1
+Priority: u=0, i
+
+
+[16-04-2025 10:01:49] Response sent with status code 404
+[16-04-2025 10:03:12] New connection from 127.0.0.1:36474
+[16-04-2025 10:03:17] Request received:
+
+[16-04-2025 10:03:17] Response sent with status code 400
+[16-04-2025 10:03:17] New connection from 127.0.0.1:36480
+[16-04-2025 10:03:22] Request received:
+
+[16-04-2025 10:03:22] Response sent with status code 400
+[16-04-2025 10:03:23] New connection from 127.0.0.1:35038
+[16-04-2025 10:03:28] Request received:
+
+[16-04-2025 10:03:28] Response sent with status code 400
+[16-04-2025 10:04:02] New connection from 127.0.0.1:55336
+[16-04-2025 10:04:04] Request received:
+GET /about.html HTTP/1.1
+Host: localhost:8080
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:136.0) Gecko/20100101 Firefox/136.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate, br, zstd
+Connection: keep-alive
+Referer: http://localhost:8080/
+Cookie: csrftoken=umvi6ac1fL85gPjcneBPKChq5buztyhU
+Upgrade-Insecure-Requests: 1
+Sec-Fetch-Dest: document
+Sec-Fetch-Mode: navigate
+Sec-Fetch-Site: same-origin
+Sec-Fetch-User: ?1
+Priority: u=0, i
+
+
+[16-04-2025 10:04:04] Response sent with status code 404
+[16-04-2025 10:04:09] New connection from 127.0.0.1:58242
+[16-04-2025 10:04:14] Request received:
+
+[16-04-2025 10:04:14] Response sent with status code 400
+[16-04-2025 10:04:18] New connection from 127.0.0.1:58246
+[16-04-2025 10:04:22] Request received:
+GET /images/example.jpg HTTP/1.1
+Host: localhost:8080
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:136.0) Gecko/20100101 Firefox/136.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate, br, zstd
+Connection: keep-alive
+Referer: http://localhost:8080/
+Cookie: csrftoken=umvi6ac1fL85gPjcneBPKChq5buztyhU
+Upgrade-Insecure-Requests: 1
+Sec-Fetch-Dest: document
+Sec-Fetch-Mode: navigate
+Sec-Fetch-Site: same-origin
+Sec-Fetch-User: ?1
+Priority: u=0, i
+
+
+[16-04-2025 10:04:22] Response sent with status code 404
+[16-04-2025 10:04:25] New connection from 127.0.0.1:54908
+[16-04-2025 10:04:26] Request received:
+GET /videos/sample.mp4 HTTP/1.1
+Host: localhost:8080
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:136.0) Gecko/20100101 Firefox/136.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate, br, zstd
+Connection: keep-alive
+Referer: http://localhost:8080/
+Cookie: csrftoken=umvi6ac1fL85gPjcneBPKChq5buztyhU
+Upgrade-Insecure-Requests: 1
+Sec-Fetch-Dest: document
+Sec-Fetch-Mode: navigate
+Sec-Fetch-Site: same-origin
+Sec-Fetch-User: ?1
+Priority: u=0, i
+
+
+[16-04-2025 10:04:26] Response sent with status code 404
+[16-04-2025 10:04:28] New connection from 127.0.0.1:54914
+[16-04-2025 10:04:29] Request received:
+GET /sample.txt HTTP/1.1
+Host: localhost:8080
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:136.0) Gecko/20100101 Firefox/136.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate, br, zstd
+Connection: keep-alive
+Referer: http://localhost:8080/
+Cookie: csrftoken=umvi6ac1fL85gPjcneBPKChq5buztyhU
+Upgrade-Insecure-Requests: 1
+Sec-Fetch-Dest: document
+Sec-Fetch-Mode: navigate
+Sec-Fetch-Site: same-origin
+Sec-Fetch-User: ?1
+Priority: u=0, i
+
+
+[16-04-2025 10:04:29] Response sent with status code 404
+[16-04-2025 10:04:32] New connection from 127.0.0.1:57884
+[16-04-2025 10:04:32] Request received:
+GET /about.html HTTP/1.1
+Host: localhost:8080
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:136.0) Gecko/20100101 Firefox/136.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate, br, zstd
+Connection: keep-alive
+Referer: http://localhost:8080/
+Cookie: csrftoken=umvi6ac1fL85gPjcneBPKChq5buztyhU
+Upgrade-Insecure-Requests: 1
+Sec-Fetch-Dest: document
+Sec-Fetch-Mode: navigate
+Sec-Fetch-Site: same-origin
+Sec-Fetch-User: ?1
+Priority: u=0, i
+
+
+[16-04-2025 10:04:32] Response sent with status code 404
+[16-04-2025 10:07:09] New connection from 127.0.0.1:53506
+[16-04-2025 10:07:15] Request received:
+
+[16-04-2025 10:07:15] Response sent with status code 400
+[16-04-2025 10:07:23] New connection from 127.0.0.1:43216
+[16-04-2025 10:07:24] Request received:
+GET /videos/sample.mp4 HTTP/1.1
+Host: localhost:8080
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:136.0) Gecko/20100101 Firefox/136.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate, br, zstd
+Connection: keep-alive
+Referer: http://localhost:8080/
+Cookie: csrftoken=umvi6ac1fL85gPjcneBPKChq5buztyhU
+Upgrade-Insecure-Requests: 1
+Sec-Fetch-Dest: document
+Sec-Fetch-Mode: navigate
+Sec-Fetch-Site: same-origin
+Sec-Fetch-User: ?1
+Priority: u=0, i
+
+
+[16-04-2025 10:07:24] Response sent with status code 200
+[16-04-2025 10:07:34] New connection from 127.0.0.1:37610
+[16-04-2025 10:07:39] Request received:
+
+[16-04-2025 10:07:39] Response sent with status code 400
+[16-04-2025 10:09:56] New connection from 127.0.0.1:49994
+[16-04-2025 10:09:56] Request received:
+GET /sample.txt HTTP/1.1
+Host: localhost:8080
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:136.0) Gecko/20100101 Firefox/136.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate, br, zstd
+Connection: keep-alive
+Cookie: csrftoken=umvi6ac1fL85gPjcneBPKChq5buztyhU
+Upgrade-Insecure-Requests: 1
+Sec-Fetch-Dest: document
+Sec-Fetch-Mode: navigate
+Sec-Fetch-Site: none
+Sec-Fetch-User: ?1
+Priority: u=0, i
+
+
+[16-04-2025 10:09:56] Response sent with status code 404
+[16-04-2025 10:10:01] New connection from 127.0.0.1:54978
+[16-04-2025 10:10:01] Request received:
+GET / HTTP/1.1
+Host: localhost:8080
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:136.0) Gecko/20100101 Firefox/136.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate, br, zstd
+Connection: keep-alive
+Cookie: csrftoken=umvi6ac1fL85gPjcneBPKChq5buztyhU
+Upgrade-Insecure-Requests: 1
+Sec-Fetch-Dest: document
+Sec-Fetch-Mode: navigate
+Sec-Fetch-Site: none
+Sec-Fetch-User: ?1
+Priority: u=0, i
+
+
+[16-04-2025 10:10:01] Response sent with status code 200
+[16-04-2025 10:10:02] New connection from 127.0.0.1:54990
+[16-04-2025 10:10:02] Request received:
+GET /images/example.jpg HTTP/1.1
+Host: localhost:8080
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:136.0) Gecko/20100101 Firefox/136.0
+Accept: image/avif,image/webp,image/png,image/svg+xml,image/*;q=0.8,*/*;q=0.5
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate, br, zstd
+Connection: keep-alive
+Referer: http://localhost:8080/
+Cookie: csrftoken=umvi6ac1fL85gPjcneBPKChq5buztyhU
+Sec-Fetch-Dest: image
+Sec-Fetch-Mode: no-cors
+Sec-Fetch-Site: same-origin
+Priority: u=4, i
+
+
+[16-04-2025 10:10:02] Response sent with status code 404
+[16-04-2025 10:10:06] New connection from 127.0.0.1:55002
+[16-04-2025 10:10:10] Request received:
+GET /images/example.jpg HTTP/1.1
+Host: localhost:8080
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:136.0) Gecko/20100101 Firefox/136.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate, br, zstd
+Connection: keep-alive
+Referer: http://localhost:8080/
+Cookie: csrftoken=umvi6ac1fL85gPjcneBPKChq5buztyhU
+Upgrade-Insecure-Requests: 1
+Sec-Fetch-Dest: document
+Sec-Fetch-Mode: navigate
+Sec-Fetch-Site: same-origin
+Sec-Fetch-User: ?1
+Priority: u=0, i
+
+
+[16-04-2025 10:10:10] Response sent with status code 404
+[16-04-2025 10:10:27] New connection from 127.0.0.1:60070
+[16-04-2025 10:10:27] Request received:
+GET /images/example.jpg HTTP/1.1
+Host: localhost:8080
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:136.0) Gecko/20100101 Firefox/136.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate, br, zstd
+Referer: http://localhost:8080/
+Connection: keep-alive
+Cookie: csrftoken=umvi6ac1fL85gPjcneBPKChq5buztyhU
+Upgrade-Insecure-Requests: 1
+Sec-Fetch-Dest: document
+Sec-Fetch-Mode: navigate
+Sec-Fetch-Site: same-origin
+Priority: u=0, i
+Pragma: no-cache
+Cache-Control: no-cache
+
+
+[16-04-2025 10:10:27] Response sent with status code 200

@@ -253,12 +253,14 @@ void handleClient(int clientSocket) {
             if (file.read(content.data(), fileSize)) {
                 std::string body(content.begin(), content.end());
                 std::string contentType = getContentType(filePath);
-                
-                // Send response with or without body depending on the method
-                sendResponse(clientSocket, StatusCode::OK, contentType, body, method == "GET");
+
+                // HEAD: no enviar body, solo headers
+                bool includeBody = (method == "GET");
+                sendResponse(clientSocket, StatusCode::OK, contentType, body, includeBody);
             } else {
                 std::string errorBody = "<html><body><h1>500 Internal Server Error</h1><p>Error reading file.</p></body></html>";
-                sendResponse(clientSocket, StatusCode::BAD_REQUEST, "text/html", errorBody, method == "GET");
+                bool includeBody = (method == "GET");
+                sendResponse(clientSocket, StatusCode::BAD_REQUEST, "text/html", errorBody, includeBody);
             }
         }
     } else if (method == "POST") {
@@ -273,9 +275,12 @@ void handleClient(int clientSocket) {
                 return;
             }
             
+            // Extract Content-Length and read full request
             size_t contentLengthEnd = request.find("\r\n", contentLengthPos);
             std::string contentLengthStr = request.substr(contentLengthPos + 16, contentLengthEnd - (contentLengthPos + 16));
             size_t contentLength = std::stoul(contentLengthStr);
+            
+            logMessage("Content-Length: " + std::to_string(contentLength));
             
             // Read the complete request with binary data
             std::vector<char> fullRequest(buffer, buffer + bytesRead);
@@ -287,99 +292,140 @@ void handleClient(int clientSocket) {
                 fullRequest.insert(fullRequest.end(), tempBuffer, tempBuffer + bytesRead);
             }
 
-            // Convert to string for header processing only
-            std::string requestStr(fullRequest.begin(), fullRequest.end());
-            
-            // Find boundary
-            std::string boundaryPrefix = "boundary=";
-            size_t boundaryPos = requestStr.find(boundaryPrefix);
+            // Find boundary in the original headers
+            size_t boundaryPos = request.find("boundary=");
             if (boundaryPos != std::string::npos) {
-                boundaryPos += boundaryPrefix.length();
-                std::string boundary;
-                size_t boundaryEnd = requestStr.find("\r\n", boundaryPos);
-                if (boundaryEnd != std::string::npos) {
-                    boundary = requestStr.substr(boundaryPos, boundaryEnd - boundaryPos);
-                    if (boundary.front() == '"' && boundary.back() == '"') {
-                        boundary = boundary.substr(1, boundary.length() - 2);
+                boundaryPos += 9; // Length of "boundary="
+                size_t boundaryEnd = request.find("\r\n", boundaryPos);
+                if (boundaryEnd == std::string::npos) {
+                    boundaryEnd = request.length();
+                    logMessage("Debug: boundaryEnd not found, using request.length()");
+                }
+                std::string boundary = request.substr(boundaryPos, boundaryEnd - boundaryPos);
+
+                // Remove quotes if present
+                if (boundary.front() == '"' && boundary.back() == '"') {
+                    boundary = boundary.substr(1, boundary.length() - 2);
+                    logMessage("Debug: Boundary quotes removed");
+                }
+
+                logMessage("Boundary: " + boundary);
+
+                // Convert full request to string for searching
+                std::string requestStr(fullRequest.begin(), fullRequest.end());
+
+                // Find the first boundary
+                std::string fullBoundary = "--" + boundary;
+                size_t contentStart = requestStr.find(fullBoundary);
+                if (contentStart == std::string::npos) {
+                    logMessage("Debug: fullBoundary not found in requestStr");
+                } else {
+                    // Find the Content-Type header within the part headers
+                    size_t contentTypePos = requestStr.find("Content-Type:", contentStart);
+                    size_t headersEnd = requestStr.find("\r\n\r\n", contentStart);
+
+                    if (contentTypePos == std::string::npos) {
+                        logMessage("Debug: Content-Type header not found after boundary");
                     }
-                    
-                    // Find content headers
-                    std::string fullBoundary = "--" + boundary;
-                    size_t contentStart = requestStr.find(fullBoundary);
-                    if (contentStart != std::string::npos) {
-                        size_t headersEnd = requestStr.find("\r\n\r\n", contentStart);
-                        if (headersEnd != std::string::npos) {
-                            // Extract filename
-                            std::string headers = requestStr.substr(contentStart, headersEnd - contentStart);
-                            size_t filenamePos = headers.find("filename=\"");
-                            std::string filename = "uploaded_file";
-                            
-                            if (filenamePos != std::string::npos) {
-                                filenamePos += 10;
-                                size_t filenameEnd = headers.find("\"", filenamePos);
-                                if (filenameEnd != std::string::npos) {
-                                    filename = headers.substr(filenamePos, filenameEnd - filenamePos);
-                                    // Get just the filename without path
-                                    size_t lastSlash = filename.find_last_of("/\\");
-                                    if (lastSlash != std::string::npos) {
-                                        filename = filename.substr(lastSlash + 1);
-                                    }
-                                    
-                                    // Replace spaces and special characters
-                                    std::string sanitizedFilename;
-                                    for (char c : filename) {
-                                        if (c == ' ') {
-                                            sanitizedFilename += '_';
-                                        } else if (isalnum(c) || c == '.' || c == '-' || c == '_') {
-                                            sanitizedFilename += c;
+                    if (headersEnd == std::string::npos) {
+                        logMessage("Debug: headersEnd (\\r\\n\\r\\n) not found after boundary");
+                    }
+
+                    if (contentTypePos != std::string::npos && headersEnd != std::string::npos) {
+                        // Extract content type
+                        size_t contentTypeStart = contentTypePos + 13; // length of "Content-Type: "
+                        size_t contentTypeEnd = requestStr.find("\r\n", contentTypeStart);
+                        if (contentTypeEnd == std::string::npos) {
+                            logMessage("Debug: contentTypeEnd (\\r\\n) not found after Content-Type");
+                        }
+                        std::string contentType = requestStr.substr(contentTypeStart, 
+                            contentTypeEnd - contentTypeStart);
+
+                        // Extract filename
+                        size_t filenamePos = requestStr.find("filename=\"", contentStart);
+                        if (filenamePos == std::string::npos) {
+                            logMessage("Debug: filename not found in Content-Disposition");
+                        } else {
+                            filenamePos += 10;
+                            size_t filenameEnd = requestStr.find("\"", filenamePos);
+                            if (filenameEnd == std::string::npos) {
+                                logMessage("Debug: filename end quote not found");
+                            } else {
+                                std::string filename = requestStr.substr(filenamePos, filenameEnd - filenamePos);
+
+                                // Get file data boundaries
+                                size_t dataStart = headersEnd + 4;
+
+                                // Busca el siguiente boundary (con o sin -- al final)
+                                std::string endBoundary1 = "\r\n--" + boundary + "--";
+                                std::string endBoundary2 = "\r\n--" + boundary + "\r\n";
+                                std::string endBoundary3 = "--" + boundary + "--";
+                                std::string endBoundary4 = "--" + boundary + "\r\n";
+                                size_t dataEnd = requestStr.find(endBoundary1, dataStart);
+                                if (dataEnd == std::string::npos) {
+                                    dataEnd = requestStr.find(endBoundary2, dataStart);
+                                    if (dataEnd == std::string::npos) {
+                                        dataEnd = requestStr.find(endBoundary3, dataStart);
+                                        if (dataEnd == std::string::npos) {
+                                            dataEnd = requestStr.find(endBoundary4, dataStart);
+                                            if (dataEnd == std::string::npos) {
+                                                // Debugging: dump a snippet of the area where we expect the boundary
+                                                size_t snippetStart = std::max(dataStart, requestStr.size() > 100 ? requestStr.size() - 100 : 0);
+                                                logMessage("Debug: Could not find end boundary. Last 100 bytes before search end: " +
+                                                    requestStr.substr(snippetStart, 100));
+                                                logMessage("Debug: end boundary not found after file data. Tried patterns: " +
+                                                    endBoundary1 + ", " + endBoundary2 + ", " + endBoundary3 + ", " + endBoundary4);
+                                            }
                                         }
                                     }
-                                    filename = sanitizedFilename;
-                                }
-                            }
-                            
-                            // Find file data boundaries
-                            size_t dataStart = headersEnd + 4;
-                            std::string endBoundary = "\r\n--" + boundary + "--";
-                            size_t dataEnd = requestStr.find(endBoundary, dataStart);
-                            
-                            if (dataEnd != std::string::npos) {
-                                // Extract binary data directly from vector
-                                std::vector<char> fileData(
-                                    fullRequest.begin() + dataStart,
-                                    fullRequest.begin() + dataEnd
-                                );
-                                
-                                // Determine file type and subdirectory
-                                std::string contentType = getContentType(filename);
-                                std::string subDirectory;
-
-                                if (contentType.find("image/") != std::string::npos) {
-                                    subDirectory = "/images/";
-                                } else if (contentType.find("video/") != std::string::npos) {
-                                    subDirectory = "/videos/";
-                                } else {
-                                    subDirectory = "/others/";
                                 }
 
-                                // Save file
-                                std::string saveFilePath = documentRoot + subDirectory + filename;
-                                std::filesystem::create_directories(documentRoot + subDirectory);
+                                if (dataEnd != std::string::npos) {
+                                    // Calcula el offset real en el vector binario
+                                    size_t binDataStart = dataStart;
+                                    size_t binDataEnd = dataEnd;
 
-                                std::ofstream outFile(saveFilePath, std::ios::binary);
-                                if (outFile.is_open()) {
-                                    outFile.write(fileData.data(), fileData.size());
-                                    outFile.close();
-                                    
-                                    std::string responseBody = "<html><body><h1>File Uploaded</h1>";
-                                    responseBody += "<p>File '" + filename + "' has been uploaded successfully.</p>";
-                                    responseBody += "<p>File type: " + contentType + "</p>";
-                                    responseBody += "<p><a href='" + subDirectory + filename + "'>View file</a></p>";
-                                    responseBody += "</body></html>";
-                                    
-                                    sendResponse(clientSocket, StatusCode::OK, "text/html", responseBody, true);
-                                    logMessage("File uploaded successfully: " + filename + " (Type: " + contentType + ")");
-                                    return;
+                                    // Ajusta si hay \r\n antes del boundary
+                                    if (binDataEnd >= 2 && fullRequest[binDataEnd - 2] == '\r' && fullRequest[binDataEnd - 1] == '\n') {
+                                        binDataEnd -= 2;
+                                        logMessage("Debug: Removed trailing \\r\\n before boundary in file data");
+                                    }
+
+                                    // Extrae los datos binarios correctamente
+                                    std::vector<char> fileData(fullRequest.begin() + binDataStart, fullRequest.begin() + binDataEnd);
+
+                                    logMessage("Debug: fileData.size() = " + std::to_string(fileData.size()));
+                                    logMessage("Debug: Saving file as: " + filename + " with content-type: " + contentType);
+
+                                    // ...resto del código para guardar el archivo...
+                                    std::string subDirectory;
+                                    if (contentType.find("image/") != std::string::npos) {
+                                        subDirectory = "/images/";
+                                    } else if (contentType.find("video/") != std::string::npos) {
+                                        subDirectory = "/videos/";
+                                    } else {
+                                        subDirectory = "/others/";
+                                    }
+
+                                    std::filesystem::create_directories(documentRoot + subDirectory);
+                                    std::string saveFilePath = documentRoot + subDirectory + filename;
+
+                                    std::ofstream outFile(saveFilePath, std::ios::binary);
+                                    if (outFile.is_open()) {
+                                        outFile.write(fileData.data(), fileData.size());
+                                        outFile.close();
+
+                                        std::string responseBody = "<html><body><h1>File Uploaded</h1>";
+                                        responseBody += "<p>File '" + filename + "' uploaded successfully</p>";
+                                        responseBody += "<p>Type: " + contentType + "</p>";
+                                        responseBody += "<p><a href='" + subDirectory + filename + "'>View file</a></p></body></html>";
+
+                                        sendResponse(clientSocket, StatusCode::OK, "text/html", responseBody, true);
+                                        logMessage("File uploaded: " + filename);
+                                        return;
+                                    } else {
+                                        logMessage("Debug: Failed to open file for writing: " + saveFilePath);
+                                    }
                                 }
                             }
                         }
@@ -387,7 +433,7 @@ void handleClient(int clientSocket) {
                 }
             }
             
-            // Error handling
+            // Error handling for failed upload
             std::string errorBody = "<html><body><h1>400 Bad Request</h1>";
             errorBody += "<p>Error processing file upload</p></body></html>";
             sendResponse(clientSocket, StatusCode::BAD_REQUEST, "text/html", errorBody, true);

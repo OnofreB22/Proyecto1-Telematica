@@ -14,6 +14,57 @@ Nuestro servidor implementa las siguientes características:
 - Manejo de errores con códigos de estado HTTP apropiados (200, 400, 404)
 - Capacidad para servir diferentes tipos de archivos (HTML, imágenes, videos, etc.)
 
+## Configuración y Ejecución
+
+### Requisitos
+- Sistema operativo Linux
+- Compilador g++ con soporte para C++17
+- Make
+
+### Compilación
+El proyecto incluye un Makefile para facilitar la compilación. Para compilar el servidor:
+
+```bash
+make
+```
+
+Para limpiar los archivos compilados:
+```bash
+make clean
+```
+
+### Ejecución
+El servidor requiere tres parámetros:
+1. Puerto HTTP (ej: 8080)
+2. Archivo de log (ej: server.log)
+3. Directorio raíz de documentos (ej: ./webroot)
+
+Para ejecutar el servidor:
+```bash
+./server 8080 server.log ./webroot
+```
+
+### Estructura de directorios
+El servidor espera la siguiente estructura de directorios en webroot:
+```
+webroot/
+├── index.html
+├── images/
+├── videos/
+└── others/
+```
+
+Los archivos subidos se clasificarán automáticamente en estos directorios según su tipo:
+- Imágenes en `/images/`
+- Videos en `/videos/`
+- Otros tipos de archivo en `/others/`
+
+### Prueba
+Una vez iniciado el servidor, puedes acceder a través de tu navegador web:
+```
+http://localhost:8080
+```
+
 ## Desarrollo/Implementación
 
 ### Tecnologías utilizadas

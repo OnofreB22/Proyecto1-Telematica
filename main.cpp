@@ -41,6 +41,27 @@ void parseRequest(const std::string& request, std::string& method,
 void sendResponse(int clientSocket, StatusCode status, const std::string& contentType,
                  const std::string& body, bool includeBody);
 
+// Helper function to decode URL-encoded strings
+std::string urlDecode(const std::string& encoded) {
+    std::string decoded;
+    for (size_t i = 0; i < encoded.length(); ++i) {
+        if (encoded[i] == '%') {
+            if (i + 2 < encoded.length()) {
+                std::string hex = encoded.substr(i + 1, 2);
+                int ch;
+                std::sscanf(hex.c_str(), "%x", &ch);
+                decoded += static_cast<char>(ch);
+                i += 2;
+            }
+        } else if (encoded[i] == '+') {
+            decoded += ' ';
+        } else {
+            decoded += encoded[i];
+        }
+    }
+    return decoded;
+}
+
 // Signal handler for graceful shutdown
 void signalHandler(int) {
     serverRunning = false;
@@ -176,10 +197,48 @@ void handleClient(int clientSocket) {
             uri = "/index.html";
         }
         
-        // Build the file path
-        std::string filePath = documentRoot + uri;
+        // Decode the URI
+        std::string decodedUri = urlDecode(uri);
         
-        // Check if file exists
+        // Build the file path
+        std::string filePath = documentRoot + decodedUri;
+        
+        // Check if path is a directory
+        if (std::filesystem::is_directory(filePath)) {
+            std::string errorBody = "<html><body>\n";
+            errorBody += "<h1>400 Bad Request</h1>\n";
+            errorBody += "<p>Directory listing is not allowed.</p>\n";
+            errorBody += "<hr>\n";
+            errorBody += "<address>" + SERVER_NAME + " Server</address>\n";
+            errorBody += "</body></html>";
+            
+            sendResponse(clientSocket, StatusCode::BAD_REQUEST, "text/html", errorBody, method == "GET");
+            logMessage("400 Bad Request: Directory access attempted: " + uri);
+            return;
+        }
+        
+        // Validate the path is within document root (prevent directory traversal)
+        std::error_code ec;
+        std::filesystem::path canonicalPath = std::filesystem::canonical(filePath, ec);
+        std::filesystem::path canonicalRoot = std::filesystem::canonical(documentRoot);
+        
+        // Check if file exists and is within document root
+        if (ec || !std::filesystem::exists(filePath) || 
+            canonicalPath.string().compare(0, canonicalRoot.string().length(), 
+            canonicalRoot.string()) != 0) {
+            std::string errorBody = "<html><body>\n";
+            errorBody += "<h1>404 Not Found</h1>\n";
+            errorBody += "<p>The requested URL " + uri + " was not found on this server.</p>\n";
+            errorBody += "<hr>\n";
+            errorBody += "<address>" + SERVER_NAME + " Server</address>\n";
+            errorBody += "</body></html>";
+            
+            sendResponse(clientSocket, StatusCode::NOT_FOUND, "text/html", errorBody, method == "GET");
+            logMessage("404 Not Found: " + uri);
+            return;
+        }
+        
+        // Rest of the file handling code...
         std::ifstream file(filePath, std::ios::binary | std::ios::ate);
         if (!file.is_open()) {
             std::string errorBody = "<html><body><h1>404 Not Found</h1><p>The requested resource was not found on this server.</p></body></html>";
@@ -203,15 +262,148 @@ void handleClient(int clientSocket) {
             }
         }
     } else if (method == "POST") {
-        // Extract the body from the request
+        if (request.find("Content-Type: multipart/form-data") != std::string::npos) {
+            logMessage("Processing multipart form data");
+            
+            // Get Content-Length from headers
+            size_t contentLengthPos = request.find("Content-Length: ");
+            if (contentLengthPos == std::string::npos) {
+                std::string errorBody = "<html><body><h1>400 Bad Request</h1><p>Missing Content-Length</p></body></html>";
+                sendResponse(clientSocket, StatusCode::BAD_REQUEST, "text/html", errorBody, true);
+                return;
+            }
+            
+            size_t contentLengthEnd = request.find("\r\n", contentLengthPos);
+            std::string contentLengthStr = request.substr(contentLengthPos + 16, contentLengthEnd - (contentLengthPos + 16));
+            size_t contentLength = std::stoul(contentLengthStr);
+            
+            // Read the complete request with binary data
+            std::vector<char> fullRequest(buffer, buffer + bytesRead);
+            char tempBuffer[BUFFER_SIZE];
+            
+            // Continue reading until we get all the data
+            while (fullRequest.size() < contentLength && 
+                  (bytesRead = recv(clientSocket, tempBuffer, BUFFER_SIZE, 0)) > 0) {
+                fullRequest.insert(fullRequest.end(), tempBuffer, tempBuffer + bytesRead);
+            }
+
+            // Convert to string for header processing only
+            std::string requestStr(fullRequest.begin(), fullRequest.end());
+            
+            // Find boundary
+            std::string boundaryPrefix = "boundary=";
+            size_t boundaryPos = requestStr.find(boundaryPrefix);
+            if (boundaryPos != std::string::npos) {
+                boundaryPos += boundaryPrefix.length();
+                std::string boundary;
+                size_t boundaryEnd = requestStr.find("\r\n", boundaryPos);
+                if (boundaryEnd != std::string::npos) {
+                    boundary = requestStr.substr(boundaryPos, boundaryEnd - boundaryPos);
+                    if (boundary.front() == '"' && boundary.back() == '"') {
+                        boundary = boundary.substr(1, boundary.length() - 2);
+                    }
+                    
+                    // Find content headers
+                    std::string fullBoundary = "--" + boundary;
+                    size_t contentStart = requestStr.find(fullBoundary);
+                    if (contentStart != std::string::npos) {
+                        size_t headersEnd = requestStr.find("\r\n\r\n", contentStart);
+                        if (headersEnd != std::string::npos) {
+                            // Extract filename
+                            std::string headers = requestStr.substr(contentStart, headersEnd - contentStart);
+                            size_t filenamePos = headers.find("filename=\"");
+                            std::string filename = "uploaded_file";
+                            
+                            if (filenamePos != std::string::npos) {
+                                filenamePos += 10;
+                                size_t filenameEnd = headers.find("\"", filenamePos);
+                                if (filenameEnd != std::string::npos) {
+                                    filename = headers.substr(filenamePos, filenameEnd - filenamePos);
+                                    // Get just the filename without path
+                                    size_t lastSlash = filename.find_last_of("/\\");
+                                    if (lastSlash != std::string::npos) {
+                                        filename = filename.substr(lastSlash + 1);
+                                    }
+                                    
+                                    // Replace spaces and special characters
+                                    std::string sanitizedFilename;
+                                    for (char c : filename) {
+                                        if (c == ' ') {
+                                            sanitizedFilename += '_';
+                                        } else if (isalnum(c) || c == '.' || c == '-' || c == '_') {
+                                            sanitizedFilename += c;
+                                        }
+                                    }
+                                    filename = sanitizedFilename;
+                                }
+                            }
+                            
+                            // Find file data boundaries
+                            size_t dataStart = headersEnd + 4;
+                            std::string endBoundary = "\r\n--" + boundary + "--";
+                            size_t dataEnd = requestStr.find(endBoundary, dataStart);
+                            
+                            if (dataEnd != std::string::npos) {
+                                // Extract binary data directly from vector
+                                std::vector<char> fileData(
+                                    fullRequest.begin() + dataStart,
+                                    fullRequest.begin() + dataEnd
+                                );
+                                
+                                // Determine file type and subdirectory
+                                std::string contentType = getContentType(filename);
+                                std::string subDirectory;
+
+                                if (contentType.find("image/") != std::string::npos) {
+                                    subDirectory = "/images/";
+                                } else if (contentType.find("video/") != std::string::npos) {
+                                    subDirectory = "/videos/";
+                                } else {
+                                    subDirectory = "/others/";
+                                }
+
+                                // Save file
+                                std::string saveFilePath = documentRoot + subDirectory + filename;
+                                std::filesystem::create_directories(documentRoot + subDirectory);
+
+                                std::ofstream outFile(saveFilePath, std::ios::binary);
+                                if (outFile.is_open()) {
+                                    outFile.write(fileData.data(), fileData.size());
+                                    outFile.close();
+                                    
+                                    std::string responseBody = "<html><body><h1>File Uploaded</h1>";
+                                    responseBody += "<p>File '" + filename + "' has been uploaded successfully.</p>";
+                                    responseBody += "<p>File type: " + contentType + "</p>";
+                                    responseBody += "<p><a href='" + subDirectory + filename + "'>View file</a></p>";
+                                    responseBody += "</body></html>";
+                                    
+                                    sendResponse(clientSocket, StatusCode::OK, "text/html", responseBody, true);
+                                    logMessage("File uploaded successfully: " + filename + " (Type: " + contentType + ")");
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Error handling
+            std::string errorBody = "<html><body><h1>400 Bad Request</h1>";
+            errorBody += "<p>Error processing file upload</p></body></html>";
+            sendResponse(clientSocket, StatusCode::BAD_REQUEST, "text/html", errorBody, true);
+            logMessage("Failed to process file upload");
+            return;
+        }
+        // Handle regular POST data as before
         size_t headerEnd = request.find("\r\n\r\n");
         if (headerEnd != std::string::npos) {
             std::string requestBody = request.substr(headerEnd + 4);
-            // Process the POST data (for this example, we'll just echo it back)
-            std::string responseBody = "<html><body><h1>POST Successful</h1><p>Received data: " + requestBody + "</p></body></html>";
+            std::string responseBody = "<html><body><h1>POST Successful</h1>";
+            responseBody += "<p>Received data: " + requestBody + "</p></body></html>";
             sendResponse(clientSocket, StatusCode::OK, "text/html", responseBody, true);
         } else {
-            std::string errorBody = "<html><body><h1>400 Bad Request</h1><p>Malformed POST request</p></body></html>";
+            std::string errorBody = "<html><body><h1>400 Bad Request</h1>";
+            errorBody += "<p>Malformed POST request</p></body></html>";
             sendResponse(clientSocket, StatusCode::BAD_REQUEST, "text/html", errorBody, true);
         }
     } else {

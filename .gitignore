@@ -1,3 +1,7 @@
+# Specifics
+server.log
+server
+
 # Prerequisites
 *.d
 
